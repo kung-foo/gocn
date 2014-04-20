@@ -12,7 +12,7 @@ package behaviors
 //--------------------
 
 import (
-	"git.tideland.biz/gocn/cells"
+	"github.com/tideland/gocn/v2/cells"
 )
 
 //--------------------

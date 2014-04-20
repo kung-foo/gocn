@@ -14,7 +14,7 @@ package behaviors
 import (
 	"sort"
 
-	"git.tideland.biz/gocn/cells"
+	"github.com/tideland/gocn/v2/cells"
 )
 
 //--------------------

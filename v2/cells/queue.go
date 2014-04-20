@@ -13,6 +13,7 @@ package cells
 
 import (
 	"github.com/tideland/goas/v2/loop"
+	"github.com/tideland/goas/v3/errors"
 )
 
 //--------------------
@@ -124,7 +125,7 @@ func (q *localEventQueue) Push(event Event) error {
 	select {
 	case q.pushc <- event:
 	case <-q.loop.IsStopping():
-		return newError(ErrStopping, "event queue")
+		return errors.New(ErrStopping, errorMessages, "event queue")
 	}
 	return nil
 }

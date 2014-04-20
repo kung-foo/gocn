@@ -17,6 +17,7 @@ import (
 
 	"github.com/tideland/goas/v2/identifier"
 	"github.com/tideland/goas/v2/logger"
+	"github.com/tideland/goas/v3/errors"
 )
 
 //--------------------
@@ -142,7 +143,7 @@ func (env *environment) Request(id, topic string, payload, response interface{})
 		}
 		return reply.err
 	case <-t.C:
-		return newError(ErrInactive, id)
+		return errors.New(ErrInactive, errorMessages, id)
 	}
 }
 

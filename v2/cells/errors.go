@@ -113,18 +113,4 @@ func IsTimeoutError(err error) bool {
 	return errors.IsError(err, ErrTimeout)
 }
 
-//--------------------
-// HELPERS
-//--------------------
-
-// newError returns the error according to code and arguments.
-func newError(code int, args ...interface{}) error {
-	return errors.New(code, errorMessages[code], args...)
-}
-
-// annotateError annotates the passed error with the given code and arguments.
-func annotateError(err error, code int, args ...interface{}) error {
-	return errors.Annotate(err, code, errorMessages[code], args...)
-}
-
 // EOF

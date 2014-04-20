@@ -12,8 +12,8 @@ package behaviors
 //--------------------
 
 import (
-	"git.tideland.biz/goas/logger"
-	"git.tideland.biz/gocn/cells"
+	"github.com/tideland/goas/v2/logger"
+	"github.com/tideland/gocn/v2/cells"
 )
 
 //--------------------

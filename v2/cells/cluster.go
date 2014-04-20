@@ -15,6 +15,8 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+
+	"github.com/tideland/goas/v3/errors"
 )
 
 //--------------------
@@ -43,7 +45,7 @@ func (c *cluster) startCell(env *environment, id string, behavior Behavior) erro
 	defer c.mux.Unlock()
 	// Check if the id already exists.
 	if _, ok := c.cells[id]; ok {
-		return newError(ErrDuplicateId, id)
+		return errors.New(ErrDuplicateId, errorMessages, id)
 	}
 	// Create cell.
 	cell, err := newCell(env, id, behavior)
@@ -63,7 +65,7 @@ func (c *cluster) stopCell(id string) error {
 		delete(c.cells, id)
 		return cell.stop()
 	}
-	return newError(ErrInvalidId, id)
+	return errors.New(ErrInvalidId, errorMessages, id)
 }
 
 // cell returns the cell with the given id.
@@ -73,7 +75,7 @@ func (c *cluster) cell(id string) (*cell, error) {
 	if cell, ok := c.cells[id]; ok {
 		return cell, nil
 	}
-	return nil, newError(ErrInvalidId, id)
+	return nil, errors.New(ErrInvalidId, errorMessages, id)
 }
 
 // subscribe adds cells to the cluster.
@@ -117,7 +119,7 @@ func (c *cluster) subscribers(id string) ([]string, error) {
 	if cell, ok := c.cells[id]; ok {
 		return cell.subscribers.ids(), nil
 	}
-	return nil, newError(ErrInvalidId, id)
+	return nil, errors.New(ErrInvalidId, errorMessages, id)
 }
 
 // subset returns a cell cluster containing the cells with the given ids.
@@ -129,7 +131,7 @@ func (c *cluster) subset(ids ...string) (*cluster, error) {
 	for _, id := range ids {
 		cell, ok := c.cells[id]
 		if !ok {
-			return nil, newError(ErrInvalidId, id)
+			return nil, errors.New(ErrInvalidId, errorMessages, id)
 		}
 		sc.cells[id] = cell
 	}
@@ -145,7 +147,7 @@ func (c *cluster) emit(id string, event Event) error {
 		return cell.processEvent(event)
 
 	}
-	return newError(ErrInvalidId, id)
+	return errors.New(ErrInvalidId, errorMessages, id)
 }
 
 // emitAll emits an event to all cells of the cluster.

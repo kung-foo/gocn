@@ -14,6 +14,8 @@ package cells
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/tideland/goas/v3/errors"
 )
 
 //--------------------
@@ -24,7 +26,7 @@ import (
 func encode(payload interface{}) ([]byte, error) {
 	encoded, err := json.Marshal(payload)
 	if err != nil {
-		return nil, annotateError(err, ErrEncoding)
+		return nil, errors.Annotate(err, ErrEncoding, errorMessages)
 	}
 	return encoded, nil
 }
@@ -32,7 +34,7 @@ func encode(payload interface{}) ([]byte, error) {
 // decode decodes encoded data into a payload.
 func decode(encoded []byte, payload interface{}) error {
 	if err := json.Unmarshal(encoded, payload); err != nil {
-		return annotateError(err, ErrDecoding)
+		return errors.Annotate(err, ErrDecoding, errorMessages)
 	}
 	return nil
 }
@@ -95,7 +97,7 @@ type event struct {
 // newEvent creates a new event with the given topic and payload.
 func newEvent(topic string, payload interface{}) (*event, error) {
 	if topic == "" {
-		return nil, newError(ErrNoTopic)
+		return nil, errors.New(ErrNoTopic, errorMessages)
 	}
 	encoded, err := encode(payload)
 	if err != nil {
@@ -107,7 +109,7 @@ func newEvent(topic string, payload interface{}) (*event, error) {
 // newEvent creates a new request event with the given topic and payload.
 func newRequest(topic string, payload interface{}) (*event, error) {
 	if topic == "" {
-		return nil, newError(ErrNoTopic)
+		return nil, errors.New(ErrNoTopic, errorMessages)
 	}
 	encoded, err := encode(payload)
 	if err != nil {
@@ -134,7 +136,7 @@ func (e *event) IsRequest() bool {
 // Respond allows the cell to respond with a payload and/or an error.
 func (e *event) Respond(payload interface{}, err error) error {
 	if e.replyc == nil {
-		return newError(ErrNoRequest)
+		return errors.New(ErrNoRequest, errorMessages)
 	}
 	reply, err := newReply(payload, err)
 	if err != nil {

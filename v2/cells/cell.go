@@ -18,6 +18,7 @@ import (
 	"github.com/tideland/goas/v2/logger"
 	"github.com/tideland/goas/v2/loop"
 	"github.com/tideland/goas/v2/monitoring"
+	"github.com/tideland/goas/v3/errors"
 )
 
 //--------------------
@@ -48,12 +49,12 @@ func newCell(env *environment, id string, behavior Behavior) (*cell, error) {
 	// Create queue.
 	queue, err := env.queueFactory(env)
 	if err != nil {
-		return nil, annotateError(err, ErrCellInit, id)
+		return nil, errors.Annotate(err, ErrCellInit, errorMessages, id)
 	}
 	c.queue = queue
 	// Init behavior.
 	if err := behavior.Init(c); err != nil {
-		return nil, annotateError(err, ErrCellInit, id)
+		return nil, errors.Annotate(err, ErrCellInit, errorMessages, id)
 	}
 	c.loop = loop.GoRecoverable(c.backendLoop, c.checkRecovering)
 
@@ -162,11 +163,11 @@ func (c *cell) checkRecovering(rs loop.Recoverings) (loop.Recoverings, error) {
 	logger.Errorf("recovering cell %q after error: %v", c.id, rs.Last().Reason)
 	// Check frequency.
 	if rs.Frequency(12, time.Minute) {
-		return nil, newError(ErrRecoveredTooOften, rs.Last().Reason)
+		return nil, errors.New(ErrRecoveredTooOften, errorMessages, rs.Last().Reason)
 	}
 	// Try to recover.
 	if err := c.behavior.Recover(rs.Last().Reason); err != nil {
-		return nil, annotateError(err, ErrEventRecovering, rs.Last().Reason)
+		return nil, errors.Annotate(err, ErrEventRecovering, errorMessages, rs.Last().Reason)
 	}
 	return rs.Trim(12), nil
 }

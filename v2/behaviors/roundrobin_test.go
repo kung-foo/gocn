@@ -14,10 +14,10 @@ package behaviors_test
 import (
 	"testing"
 
-	"git.tideland.biz/gocn/behaviors"
-	"git.tideland.biz/gocn/cells"
-	"git.tideland.biz/gocn/testsupport"
-	"git.tideland.biz/gots/asserts"
+	"github.com/tideland/gocn/v2/behaviors"
+	"github.com/tideland/gocn/v2/cells"
+	"github.com/tideland/gocn/v2/testsupport"
+	"github.com/tideland/gots/v3/asserts"
 )
 
 //--------------------
@@ -32,19 +32,20 @@ func TestRoundRobinBehavior(t *testing.T) {
 	defer env.Stop()
 
 	env.StartCell("round-robin", behaviors.NewRoundRobinBehavior())
-	env.StartCell("test-1", testsupport.NewTestBehavior())
-	env.StartCell("test-2", testsupport.NewTestBehavior())
-	env.StartCell("test-3", testsupport.NewTestBehavior())
-	env.StartCell("test-4", testsupport.NewTestBehavior())
-	env.StartCell("test-5", testsupport.NewTestBehavior())
-	env.Subscribe("round-robin", "test-1", "test-2", "test-3", "test-4", "test-5")
+	env.StartCell("round-robin-1", testsupport.NewTestBehavior())
+	env.StartCell("round-robin-2", testsupport.NewTestBehavior())
+	env.StartCell("round-robin-3", testsupport.NewTestBehavior())
+	env.StartCell("round-robin-4", testsupport.NewTestBehavior())
+	env.StartCell("round-robin-5", testsupport.NewTestBehavior())
+	env.Subscribe("round-robin", "round-robin-1", "round-robin-2", "round-robin-3", "round-robin-4", "round-robin-5")
 
-	// Just 23 to let 'test-4' and 'test-5' receive less events.
+	// Just 23 to let 'round-robin-4' and 'round-robin-5' receive less events.
 	for i := 0; i < 23; i++ {
 		err := env.Raise("round-robin", "round", i)
 		assert.Nil(err)
 	}
 
+	testsupport.LetItWork()
 	testsupport.LetItWork()
 
 	test := func(id string, length int) {
@@ -54,11 +55,11 @@ func TestRoundRobinBehavior(t *testing.T) {
 		assert.Length(processed, length)
 	}
 
-	test("test-1", 5)
-	test("test-2", 5)
-	test("test-3", 5)
-	test("test-4", 4)
-	test("test-5", 4)
+	test("round-robin-1", 5)
+	test("round-robin-2", 5)
+	test("round-robin-3", 5)
+	test("round-robin-4", 4)
+	test("round-robin-5", 4)
 }
 
 // EOF

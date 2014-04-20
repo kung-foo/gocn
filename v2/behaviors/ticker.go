@@ -14,9 +14,9 @@ package behaviors
 import (
 	"time"
 
-	"git.tideland.biz/goas/identifier"
-	"git.tideland.biz/goas/loop"
-	"git.tideland.biz/gocn/cells"
+	"github.com/tideland/goas/v2/identifier"
+	"github.com/tideland/goas/v2/loop"
+	"github.com/tideland/gocn/v2/cells"
 )
 
 //--------------------

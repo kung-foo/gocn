@@ -15,10 +15,10 @@ import (
 	"testing"
 	"time"
 
-	"git.tideland.biz/gocn/behaviors"
-	"git.tideland.biz/gocn/cells"
-	"git.tideland.biz/gocn/testsupport"
-	"git.tideland.biz/gots/asserts"
+	"github.com/tideland/gocn/v2/behaviors"
+	"github.com/tideland/gocn/v2/cells"
+	"github.com/tideland/gocn/v2/testsupport"
+	"github.com/tideland/gots/v3/asserts"
 )
 
 //--------------------
@@ -32,11 +32,11 @@ func TestTickerBehavior(t *testing.T) {
 	env := cells.NewEnvironment(cells.Id("ticker-behavior"))
 	defer env.Stop()
 
-	env.StartCell("ticker", behaviors.NewTickerBehavior(25*time.Millisecond))
+	env.StartCell("ticker", behaviors.NewTickerBehavior(22*time.Millisecond))
 	env.StartCell("test", testsupport.NewTestBehavior())
 	env.Subscribe("ticker", "test")
 
-	time.Sleep(110 * time.Millisecond)
+	testsupport.LetItWork()
 
 	var processed []string
 	err := env.Request("test", "processed", nil, &processed)

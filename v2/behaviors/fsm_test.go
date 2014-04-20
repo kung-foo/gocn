@@ -15,10 +15,10 @@ import (
 	"fmt"
 	"testing"
 
-	"git.tideland.biz/gocn/behaviors"
-	"git.tideland.biz/gocn/cells"
-	"git.tideland.biz/gocn/testsupport"
-	"git.tideland.biz/gots/asserts"
+	"github.com/tideland/gocn/v2/behaviors"
+	"github.com/tideland/gocn/v2/cells"
+	"github.com/tideland/gocn/v2/testsupport"
+	"github.com/tideland/gots/v3/asserts"
 )
 
 //--------------------
