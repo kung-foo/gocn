@@ -38,7 +38,6 @@ func TestCollectorBehavior(t *testing.T) {
 	}
 
 	testsupport.LetItWork()
-	testsupport.LetItWork()
 
 	var collected []behaviors.EventData
 	err := env.Request("collector", "collected", nil, &collected)
@@ -56,7 +55,6 @@ func TestCollectorBehavior(t *testing.T) {
 
 	err = env.Request("collector", "someWeirdRequestThatDoesntExist", nil, nil)
 	assert.NotNil(err)
-	t.Logf("response: %v", err)
 }
 
 // EOF

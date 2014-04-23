@@ -8,8 +8,9 @@
 package cells
 
 var (
-	NewEvent   = newEvent
-	NewRequest = newRequest
+	NewRingBuffer = newRingBuffer
+	NewEvent      = newEvent
+	NewRequest    = newRequest
 )
 
 // EOF

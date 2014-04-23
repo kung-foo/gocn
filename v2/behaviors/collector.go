@@ -70,7 +70,7 @@ func (b *collectorBehavior) ProcessEvent(event cells.Event) error {
 			b.collected = []EventData{}
 			return event.Respond(true, nil)
 		}
-		return NewIllegalRequestError(event)
+		return event.Respond(nil, NewIllegalRequestError(event))
 	}
 	// Process event.
 	if len(b.collected) == b.max {

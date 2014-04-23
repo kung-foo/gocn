@@ -43,65 +43,91 @@ type EventQueue interface {
 // LOCAL EVENT QUEUE
 //--------------------
 
-// ringBuffer
+// eventLink stores an event and a link to the next event.
+type eventLink struct {
+	event Event
+	next  *eventLink
+}
+
+// ringBuffer stores events in a linked ring.
 type ringBuffer struct {
-	events []Event
-	start  int
-	end    int
+	start   *eventLink
+	end     *eventLink
+	current *eventLink
 }
 
-// newRingBuffer
+// newRingBuffer creates a new ring buffer.
 func newRingBuffer(size int) *ringBuffer {
-	return &ringBuffer{
-		events: make([]Event, size),
-		start:  0,
-		end:    0,
+	rb := &ringBuffer{}
+	rb.start = &eventLink{}
+	rb.end = rb.start
+	for i := 0; i < size-1; i++ {
+		link := &eventLink{}
+		rb.end.next = link
+		rb.end = link
 	}
+	rb.end.next = rb.start
+	return rb
 }
 
-// peek returns the first event of the queue.
-func (rb *ringBuffer) peek() Event {
-	if rb.start == rb.end {
-		return nil
-	}
-	return rb.events[rb.start]
-}
-
-// push adds an event to the end of the queue.
-func (rb *ringBuffer) push(event Event) {
-	rb.events[rb.end] = event
-	rb.end++
-	if rb.end == cap(rb.events) {
-		rb.end = 0
-	}
-	if rb.end == rb.start {
-		// Buffer full, so resize.
-		tmp := make([]Event, cap(rb.events)*2)
-		copy(tmp[0:], rb.events[rb.start:])
-		if rb.end > 0 {
-			copy(tmp[rb.end-1:], rb.events[:rb.end])
+// Len returns the number of events in the buffer.
+func (rb *ringBuffer) Len() int {
+	l := 0
+	current := rb.start
+	for current.event != nil {
+		l++
+		current = current.next
+		if current == rb.start {
+			break
 		}
-		rb.start = 0
-		rb.end = cap(rb.events)
-		rb.events = tmp
 	}
+	return l
 }
 
-// pop removes the first event of the queue.
-func (rb *ringBuffer) pop() {
-	if rb.start == rb.end {
+// Cap returns the capacity of the buffer.
+func (rb *ringBuffer) Cap() int {
+	c := 1
+	current := rb.start
+	for current.next != rb.start {
+		c++
+		current = current.next
+	}
+	return c
+}
+
+// Peek returns the first event of the queue.
+func (rb *ringBuffer) Peek() Event {
+	return rb.start.event
+}
+
+// Push adds an event to the end of the queue.
+func (rb *ringBuffer) Push(event Event) {
+	if rb.end.next.event == nil {
+		rb.end.next.event = event
+		rb.end = rb.end.next
 		return
 	}
-	rb.start++
-	if rb.start == cap(rb.events) {
-		rb.start = 0
+	link := &eventLink{
+		event: event,
+		next:  rb.start,
 	}
+	rb.end.next = link
+	rb.end = rb.end.next
+}
+
+// Pop removes the first event of the queue.
+func (rb *ringBuffer) Pop() {
+	if rb.start.event == nil {
+		return
+	}
+	rb.start.event = nil
+	rb.start = rb.start.next
 }
 
 // localEventQueue implements a local in-memory event queue.
 type localEventQueue struct {
 	buffer *ringBuffer
-	pushc  chan Event
+	Pushc  chan Event
 	eventc chan Event
 	loop   loop.Loop
 }
@@ -112,7 +138,7 @@ func MakeLocalEventQueueFactory(size int) EventQueueFactory {
 	return func(env Environment) (EventQueue, error) {
 		queue := &localEventQueue{
 			buffer: newRingBuffer(size),
-			pushc:  make(chan Event),
+			Pushc:  make(chan Event),
 			eventc: make(chan Event),
 		}
 		queue.loop = loop.Go(queue.backendLoop)
@@ -123,7 +149,7 @@ func MakeLocalEventQueueFactory(size int) EventQueueFactory {
 // Push appends an event to the end of the queue.
 func (q *localEventQueue) Push(event Event) error {
 	select {
-	case q.pushc <- event:
+	case q.Pushc <- event:
 	case <-q.loop.IsStopping():
 		return errors.New(ErrStopping, errorMessages, "event queue")
 	}
@@ -144,22 +170,24 @@ func (l *localEventQueue) Stop() error {
 // backendLoop realizes the backend of the queue.
 func (q *localEventQueue) backendLoop(l loop.Loop) error {
 	for {
-		if q.buffer.peek() == nil {
+		if q.buffer.Peek() == nil {
+			// Empty buffer.
 			select {
-			case <-q.loop.ShallStop():
+			case <-l.ShallStop():
 				return nil
-			case event := <-q.pushc:
-				q.buffer.push(event)
+			case event := <-q.Pushc:
+				q.buffer.Push(event)
 			}
-		}
-
-		select {
-		case <-q.loop.ShallStop():
-			return nil
-		case event := <-q.pushc:
-			q.buffer.push(event)
-		case q.eventc <- q.buffer.peek():
-			q.buffer.pop()
+		} else {
+			// At least one event in buffer.
+			select {
+			case <-l.ShallStop():
+				return nil
+			case event := <-q.Pushc:
+				q.buffer.Push(event)
+			case q.eventc <- q.buffer.Peek():
+				q.buffer.Pop()
+			}
 		}
 	}
 }

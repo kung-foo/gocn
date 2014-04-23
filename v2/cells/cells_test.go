@@ -12,6 +12,7 @@ package cells_test
 //--------------------
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -81,6 +82,82 @@ func TestRequest(t *testing.T) {
 	assert.True(cells.IsNoRequestError(err))
 	err = request.Respond("allowed", nil)
 	assert.Nil(err)
+}
+
+// TestRingBuffer tests the buffer used by the local event queue.
+func TestRingBuffer(t *testing.T) {
+	assert := asserts.NewTestingAssertion(t, true)
+	buffer := cells.NewRingBuffer(5)
+
+	// Initial empty buffer.
+	assert.Nil(buffer.Peek())
+	assert.Equal(buffer.Cap(), 5)
+
+	// Push first event.
+	event, err := cells.NewEvent("buffer-test-1", "foo")
+	assert.Nil(err)
+	buffer.Push(event)
+	assert.Equal(buffer.Peek().Topic(), "buffer-test-1")
+	assert.Length(buffer, 1)
+
+	// Fill buffer.
+	for i := 2; i < 6; i++ {
+		topic := fmt.Sprintf("buffer-test-%d", i)
+		event, err := cells.NewEvent(topic, "foo")
+		assert.Nil(err)
+		buffer.Push(event)
+	}
+	assert.Length(buffer, 5)
+	assert.Equal(buffer.Cap(), 5)
+
+	// Add one to increase the buffer.
+	event, err = cells.NewEvent("buffer-test-6", "foo")
+	assert.Nil(err)
+	buffer.Push(event)
+	assert.Length(buffer, 6)
+	assert.Equal(buffer.Cap(), 6)
+
+	// Pop the first event.
+	buffer.Pop()
+	assert.Length(buffer, 5)
+	assert.Equal(buffer.Cap(), 6)
+
+	// Add one w/o increasing the buffer.
+	event, err = cells.NewEvent("buffer-test-7", "foo")
+	assert.Nil(err)
+	buffer.Push(event)
+	assert.Length(buffer, 6)
+	assert.Equal(buffer.Cap(), 6)
+
+	// Add one to increase the buffer.
+	event, err = cells.NewEvent("buffer-test-8", "foo")
+	assert.Nil(err)
+	buffer.Push(event)
+	assert.Length(buffer, 7)
+	assert.Equal(buffer.Cap(), 7)
+
+	// Peek again.
+	assert.Equal(buffer.Peek().Topic(), "buffer-test-2")
+
+	// Pop it almost empty.
+	for i := 0; i < 6; i++ {
+		buffer.Pop()
+	}
+	assert.Length(buffer, 1)
+	assert.Equal(buffer.Cap(), 7)
+
+	// Now pop it empty.
+	buffer.Pop()
+	assert.Length(buffer, 0)
+	assert.Equal(buffer.Cap(), 7)
+	assert.Nil(buffer.Peek())
+
+	// One final push to empty buffer.
+	event, err = cells.NewEvent("buffer-test-9", "foo")
+	assert.Nil(err)
+	buffer.Push(event)
+	assert.Length(buffer, 1)
+	assert.Equal(buffer.Cap(), 7)
 }
 
 // TestLocalEventQueue tests the local event queue.

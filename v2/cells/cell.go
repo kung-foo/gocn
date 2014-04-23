@@ -56,7 +56,9 @@ func newCell(env *environment, id string, behavior Behavior) (*cell, error) {
 	if err := behavior.Init(c); err != nil {
 		return nil, errors.Annotate(err, ErrCellInit, errorMessages, id)
 	}
-	c.loop = loop.GoRecoverable(c.backendLoop, c.checkRecovering)
+	// TODO Revert!
+	// c.loop = loop.GoRecoverable(c.backendLoop, c.checkRecovering)
+	c.loop = loop.Go(c.backendLoop)
 
 	logger.Infof("cell %q started", id)
 
@@ -144,6 +146,9 @@ func (c *cell) backendLoop(l loop.Loop) error {
 		case <-c.loop.ShallStop():
 			return c.behavior.Terminate()
 		case event := <-c.queue.Events():
+			if event == nil {
+				panic("ooooooouch")
+			}
 			measuring := monitoring.BeginMeasuring(c.measuringId)
 			err := c.behavior.ProcessEvent(event)
 			if err != nil {
