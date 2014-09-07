@@ -113,7 +113,7 @@ More to come.
 The test support package is only needed if local changes and Go tests
 are planned.
 
-[![GoDoc](https://godoc.org/github.com/tideland/gocn/v3/behaviors?testsupport.svg)](https://godoc.org/github.com/tideland/gocn/v3/testsupport)
+[![GoDoc](https://godoc.org/github.com/tideland/gocn/v3/testsupport?status.svg)](https://godoc.org/github.com/tideland/gocn/v3/testsupport)
 
 ## Authors
 
