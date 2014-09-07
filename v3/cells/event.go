@@ -58,8 +58,11 @@ type payload struct {
 	values PayloadValues
 }
 
-// NewPayload creates a new payload containing the
-// passed values.
+// NewPayload creates a new payload containing the passed
+// values. In case of a Payload this is used directly, in
+// case of a PayloadValues or a map[string]interface{} their
+// content is used, and when passing any other type the
+// value is stored with the key cells.DefaultPayload.
 func NewPayload(values interface{}) Payload {
 	if p, ok := values.(Payload); ok {
 		return p
