@@ -1,5 +1,10 @@
 # Tideland Go Cell Network
 
+## 2015-03-13
+
+- New version 3.1.0
+- Removed `cells.Environment.Options()` as it is useless
+
 ## 2014-09-07
 
 - New version 3.0.0

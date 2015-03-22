@@ -1,6 +1,6 @@
 // Tideland Go Cell Network - Cells - Environment
 //
-// Copyright (C) 2010-2014 Frank Mueller / Tideland / Oldenburg / Germany
+// Copyright (C) 2010-2015 Frank Mueller / Tideland / Oldenburg / Germany
 //
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
@@ -43,10 +43,12 @@ type environment struct {
 func NewEnvironment(options ...Option) Environment {
 	env := &environment{
 		id:           identifier.NewUUID().String(),
-		queueFactory: MakeLocalEventQueueFactory(10),
+		queueFactory: makeLocalEventQueueFactory(10),
 		cells:        newCluster(),
 	}
-	env.Options(options...)
+	for _, option := range options {
+		option(env)
+	}
 	runtime.SetFinalizer(env, (*environment).Stop)
 	logger.Infof("cells environment %q started", env.ID())
 	return env
@@ -55,15 +57,6 @@ func NewEnvironment(options ...Option) Environment {
 // ID is specified on the Environment interface.
 func (env *environment) ID() string {
 	return env.id
-}
-
-// Options is specified on the Environment interface.
-func (env *environment) Options(options ...Option) Options {
-	previous := make(Options, len(options))
-	for index, option := range options {
-		previous[index] = option(env)
-	}
-	return previous
 }
 
 // StartCell is specified on the Environment interface.

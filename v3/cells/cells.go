@@ -1,6 +1,6 @@
 // Tideland Go Cell Network - Cells
 //
-// Copyright (C) 2010-2014 Frank Mueller / Tideland / Oldenburg / Germany
+// Copyright (C) 2010-2015 Frank Mueller / Tideland / Oldenburg / Germany
 //
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
@@ -26,9 +26,6 @@ type Environment interface {
 	// ID returns the ID of the environment. When creating the environment
 	// the ID can by set manually or is generated automatically.
 	ID() string
-
-	// Options sets options of the environment.
-	Options(options ...Option) Options
 
 	// StartCell starts a new cell with a given ID and its behavior.
 	StartCell(id string, behavior Behavior) error

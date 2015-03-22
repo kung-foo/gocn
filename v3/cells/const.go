@@ -1,6 +1,6 @@
 // Tideland Go Cell Network - Cells - Constants
 //
-// Copyright (C) 2010-2014 Frank Mueller / Oldenburg / Germany
+// Copyright (C) 2010-2015 Frank Mueller / Oldenburg / Germany
 //
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.

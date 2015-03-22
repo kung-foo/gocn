@@ -1,6 +1,6 @@
 // Tideland Go Cell Network - Cells - Queue
 //
-// Copyright (C) 2010-2014 Frank Mueller / Tideland / Oldenburg / Germany
+// Copyright (C) 2010-2015 Frank Mueller / Tideland / Oldenburg / Germany
 //
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
@@ -132,9 +132,9 @@ type localEventQueue struct {
 	loop   loop.Loop
 }
 
-// MakeLocalEventQueueFactory creates a factory for local
+// makeLocalEventQueueFactory creates a factory for local
 // event queues.
-func MakeLocalEventQueueFactory(size int) EventQueueFactory {
+func makeLocalEventQueueFactory(size int) EventQueueFactory {
 	return func(env Environment) (EventQueue, error) {
 		queue := &localEventQueue{
 			buffer: newRingBuffer(size),
