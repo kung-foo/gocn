@@ -127,7 +127,7 @@ func (rb *ringBuffer) Pop() {
 // localEventQueue implements a local in-memory event queue.
 type localEventQueue struct {
 	buffer *ringBuffer
-	Pushc  chan Event
+	pushc  chan Event
 	eventc chan Event
 	loop   loop.Loop
 }
@@ -138,7 +138,7 @@ func makeLocalEventQueueFactory(size int) EventQueueFactory {
 	return func(env Environment) (EventQueue, error) {
 		queue := &localEventQueue{
 			buffer: newRingBuffer(size),
-			Pushc:  make(chan Event),
+			pushc:  make(chan Event),
 			eventc: make(chan Event),
 		}
 		queue.loop = loop.Go(queue.backendLoop)
@@ -149,7 +149,7 @@ func makeLocalEventQueueFactory(size int) EventQueueFactory {
 // Push appends an event to the end of the queue.
 func (q *localEventQueue) Push(event Event) error {
 	select {
-	case q.Pushc <- event:
+	case q.pushc <- event:
 	case <-q.loop.IsStopping():
 		return errors.New(ErrStopping, errorMessages, "event queue")
 	}
@@ -175,7 +175,7 @@ func (q *localEventQueue) backendLoop(l loop.Loop) error {
 			select {
 			case <-l.ShallStop():
 				return nil
-			case event := <-q.Pushc:
+			case event := <-q.pushc:
 				q.buffer.Push(event)
 			}
 		} else {
@@ -183,7 +183,7 @@ func (q *localEventQueue) backendLoop(l loop.Loop) error {
 			select {
 			case <-l.ShallStop():
 				return nil
-			case event := <-q.Pushc:
+			case event := <-q.pushc:
 				q.buffer.Push(event)
 			case q.eventc <- q.buffer.Peek():
 				q.buffer.Pop()
